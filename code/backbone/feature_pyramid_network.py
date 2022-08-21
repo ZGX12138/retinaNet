@@ -212,6 +212,13 @@ class FeaturePyramidNetwork(nn.Module):
 
         self.extra_blocks = extra_blocks
 
+        self.LFF_layer1to2=nn.Conv2d(256,512,stride=2,kernel_size=1)
+        self.LFF_layer2to3 = nn.Conv2d(512, 1024, stride=2, kernel_size=1)
+        self.LFF_layer3to4 = nn.Conv2d(1024, 2048, stride=2, kernel_size=1)
+        self.LFF_relu=nn.ReLU(inplace=True)
+        self.LFF_inner_block_module1to2= nn.Conv2d(512, out_channels, 1)
+        self.LFF_inner_block_module2to3 = nn.Conv2d(1024, out_channels, 1)
+        self.LFF_inner_block_module3to4 = nn.Conv2d(2048, out_channels, 1)
     def get_result_from_inner_blocks(self, x: Tensor, idx: int) -> Tensor:
         """
         This is equivalent to self.inner_blocks[idx](x),
@@ -264,13 +271,21 @@ class FeaturePyramidNetwork(nn.Module):
         results = []
         # 将layer4调整channel后的特征矩阵，通过3x3卷积后得到对应的预测特征矩阵
         # results.append(self.layer_blocks[-1](last_inner))
-        results.append(self.get_result_from_layer_blocks(last_inner, -1))
-
+        LFF_back_P2=self.LFF_relu(self.LFF_layer1to2(x[0]))
+        LFF_P2=self.LFF_inner_block_module1to2(LFF_back_P2)
+        LFF_back_P3=self.LFF_relu(self.LFF_layer2to3(LFF_back_P2))
+        LFF_P3=self.LFF_inner_block_module2to3(LFF_back_P3)
+        LFF_back_P4 = self.LFF_relu(self.LFF_layer3to4(LFF_back_P3))
+        LFF_P4 = self.LFF_inner_block_module3to4(LFF_back_P4)
+        # results.append(self.get_result_from_layer_blocks(last_inner, -1))
+        a=self.get_result_from_layer_blocks(last_inner, -1)
+        results.append(a+LFF_P4)
         for idx in range(len(x) - 2, -1, -1):
             inner_lateral = self.get_result_from_inner_blocks(x[idx], idx)
             feat_shape = inner_lateral.shape[-2:]
             inner_top_down = F.interpolate(last_inner, size=feat_shape, mode="nearest")
             last_inner = inner_lateral + inner_top_down
+
             results.insert(0, self.get_result_from_layer_blocks(last_inner, idx))
 
         # 在layer4对应的预测特征层基础上生成预测特征矩阵5

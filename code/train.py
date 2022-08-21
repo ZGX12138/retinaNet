@@ -19,7 +19,7 @@ def create_model(num_classes):
     # 如果GPU显存很大可以设置比较大的batch_size就可以将norm_layer设置为普通的BatchNorm2d
     backbone = resnet50_fpn_backbone(
                                      # norm_layer=torch.nn.BatchNorm2d,
-                                     returned_layers=[2, 3, 4],
+                                     returned_layers=[1, 2, 3, 4],
                                      extra_blocks=LastLevelP6P7(256, 256),
                                      trainable_layers=3)
     model = RetinaNet(backbone, num_classes)
@@ -28,7 +28,8 @@ def create_model(num_classes):
     # https://download.pytorch.org/models/retinanet_resnet50_fpn_coco-eeacb38b.pth
     weights_dict = torch.load("../pth/pre/retinanet_resnet50_fpn.pth", map_location='cpu')
     # 删除分类器部分的权重，因为自己的数据集类别与预训练数据集类别(91)不一定致，如果载入会出现冲突
-    del_keys = ["head.classification_head.cls_logits.weight", "head.classification_head.cls_logits.bias"]
+    del_keys = ["backbone.fpn.inner_blocks.0.weight","backbone.fpn.inner_blocks.1.weight","backbone.fpn.inner_blocks.2.weight",
+                "head.classification_head.cls_logits.weight", "head.classification_head.cls_logits.bias"]
     for k in del_keys:
         del weights_dict[k]
     print(model.load_state_dict(weights_dict, strict=False))
