@@ -219,6 +219,13 @@ class FeaturePyramidNetwork(nn.Module):
         self.LFF_inner_block_module1to2= nn.Conv2d(512, out_channels, 1)
         self.LFF_inner_block_module2to3 = nn.Conv2d(1024, out_channels, 1)
         self.LFF_inner_block_module3to4 = nn.Conv2d(2048, out_channels, 1)
+
+        for module in [self.LFF_layer1to2, self.LFF_layer2to3,
+                       self.LFF_layer3to4,self.LFF_inner_block_module1to2,
+                       self.LFF_inner_block_module2to3,self.LFF_inner_block_module3to4]:
+            nn.init.kaiming_uniform_(module.weight, a=1)
+            nn.init.constant_(module.bias, 0)
+
     def get_result_from_inner_blocks(self, x: Tensor, idx: int) -> Tensor:
         """
         This is equivalent to self.inner_blocks[idx](x),
