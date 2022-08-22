@@ -26,13 +26,13 @@ def create_model(num_classes):
 
     # 载入预训练权重
     # https://download.pytorch.org/models/retinanet_resnet50_fpn_coco-eeacb38b.pth
-    weights_dict = torch.load("../input/retinanet-pth/pth/pre/retinanet_resnet50_fpn.pth", map_location='cpu')
-    # 删除分类器部分的权重，因为自己的数据集类别与预训练数据集类别(91)不一定致，如果载入会出现冲突
-    del_keys = ["backbone.fpn.inner_blocks.0.weight","backbone.fpn.inner_blocks.1.weight","backbone.fpn.inner_blocks.2.weight",
-                "head.classification_head.cls_logits.weight", "head.classification_head.cls_logits.bias"]
-    for k in del_keys:
-        del weights_dict[k]
-    print(model.load_state_dict(weights_dict, strict=False))
+    # weights_dict = torch.load("../input/retinanet-pth/pth/pre/retinanet_resnet50_fpn.pth", map_location='cpu')
+    # # 删除分类器部分的权重，因为自己的数据集类别与预训练数据集类别(91)不一定致，如果载入会出现冲突
+    # del_keys = ["backbone.fpn.inner_blocks.0.weight","backbone.fpn.inner_blocks.1.weight","backbone.fpn.inner_blocks.2.weight",
+    #             "head.classification_head.cls_logits.weight", "head.classification_head.cls_logits.bias"]
+    # for k in del_keys:
+    #     del weights_dict[k]
+    # print(model.load_state_dict(weights_dict, strict=False))
 
     return model
 
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', default=15, type=int, metavar='N',
                         help='number of total epochs to run')
     # 训练的batch size
-    parser.add_argument('--batch_size', default=4, type=int, metavar='N',
+    parser.add_argument('--batch_size', default=8, type=int, metavar='N',
                         help='batch size when training.')
     parser.add_argument('--aspect-ratio-group-factor', default=3, type=int)
     # 是否使用混合精度训练(需要GPU支持混合精度)
