@@ -278,15 +278,23 @@ class FeaturePyramidNetwork(nn.Module):
         LFF_back_P4 = self.LFF_relu(self.LFF_layer3to4(LFF_back_P3))
         LFF_P4 = self.LFF_inner_block_module3to4(LFF_back_P4)
         # results.append(self.get_result_from_layer_blocks(last_inner, -1))
-        a=self.get_result_from_layer_blocks(last_inner, -1)
-        results.append(a+LFF_P4)
-        for idx in range(len(x) - 2, -1, -1):
-            inner_lateral = self.get_result_from_inner_blocks(x[idx], idx)
-            feat_shape = inner_lateral.shape[-2:]
-            inner_top_down = F.interpolate(last_inner, size=feat_shape, mode="nearest")
-            last_inner = inner_lateral + inner_top_down
+        P5=self.get_result_from_layer_blocks(last_inner, -1)
+        results.append(P5+LFF_P4)
 
-            results.insert(0, self.get_result_from_layer_blocks(last_inner, idx))
+        inner_lateral = self.get_result_from_inner_blocks(x[2], 2)
+        feat_shape = inner_lateral.shape[-2:]
+        inner_top_down = F.interpolate(last_inner, size=feat_shape, mode="nearest")
+        last_inner = inner_lateral + inner_top_down
+        P4=self.get_result_from_layer_blocks(last_inner, -2)
+        results.insert(0, P4+LFF_P3)
+
+        inner_lateral = self.get_result_from_inner_blocks(x[1], 1)
+        feat_shape = inner_lateral.shape[-2:]
+        inner_top_down = F.interpolate(last_inner, size=feat_shape, mode="nearest")
+        last_inner = inner_lateral + inner_top_down
+        P3 = self.get_result_from_layer_blocks(last_inner, -3)
+        results.insert(0, P3 + LFF_P2)
+
 
         # 在layer4对应的预测特征层基础上生成预测特征矩阵5
         if self.extra_blocks is not None:
