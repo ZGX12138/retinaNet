@@ -212,9 +212,9 @@ class FeaturePyramidNetwork(nn.Module):
 
         self.extra_blocks = extra_blocks
 
-        self.LFF_layer1to2=nn.Conv2d(256,512,stride=2,kernel_size=1)
-        self.LFF_layer2to3 = nn.Conv2d(512, 1024, stride=2, kernel_size=1)
-        self.LFF_layer3to4 = nn.Conv2d(1024, 2048, stride=2, kernel_size=1)
+        self.LFF_layer1to2=nn.Conv2d(256,512,stride=2,kernel_size=3,padding=1)
+        self.LFF_layer2to3 = nn.Conv2d(512, 1024, stride=2,kernel_size=3,padding=1)
+        self.LFF_layer3to4 = nn.Conv2d(1024, 2048, stride=2,kernel_size=3,padding=1)
         self.LFF_relu=nn.ReLU(inplace=True)
         self.LFF_inner_block_module1to2= nn.Conv2d(512, out_channels, 1)
         self.LFF_inner_block_module2to3 = nn.Conv2d(1024, out_channels, 1)
