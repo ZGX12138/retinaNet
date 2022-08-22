@@ -21,6 +21,7 @@ class VOCDataSet(Dataset):
 
         # read train.txt or val.txt file
         txt_path = os.path.join(self.root, "ImageSets", "Main", txt_name)
+        print(txt_path)
         assert os.path.exists(txt_path), "not found {} file.".format(txt_name)
 
         with open(txt_path) as read:
