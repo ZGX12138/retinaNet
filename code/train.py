@@ -26,7 +26,7 @@ def create_model(num_classes):
 
     # 载入预训练权重
     # https://download.pytorch.org/models/retinanet_resnet50_fpn_coco-eeacb38b.pth
-    weights_dict = torch.load("../pth/pre/retinanet_resnet50_fpn.pth", map_location='cpu')
+    weights_dict = torch.load("../input/retinanet-pth/pth/pre/retinanet_resnet50_fpn.pth", map_location='cpu')
     # 删除分类器部分的权重，因为自己的数据集类别与预训练数据集类别(91)不一定致，如果载入会出现冲突
     del_keys = ["backbone.fpn.inner_blocks.0.weight","backbone.fpn.inner_blocks.1.weight","backbone.fpn.inner_blocks.2.weight",
                 "head.classification_head.cls_logits.weight", "head.classification_head.cls_logits.bias"]
@@ -51,7 +51,7 @@ def main(args):
 
     VOC_root = args.data_path
     # check voc root
-    if os.path.exists(os.path.join(VOC_root, "VOCdevkit")) is False:
+    if os.path.exists(os.path.join(VOC_root, "pascal-voc-2012")) is False:
         raise FileNotFoundError("VOCdevkit dose not in path:'{}'.".format(VOC_root))
 
     # load train data set
@@ -162,7 +162,7 @@ def main(args):
             'epoch': epoch}
         if args.amp:
             save_files["scaler"] = scaler.state_dict()
-        torch.save(save_files, "../pth/output/resNetFpn-model-{}.pth".format(epoch))
+        torch.save(save_files, "./pth/output/resNetFpn-model-{}.pth".format(epoch))
 
     # plot loss and lr curve
     if len(train_loss) != 0 and len(learning_rate) != 0:
@@ -184,11 +184,11 @@ if __name__ == "__main__":
     # 训练设备类型
     parser.add_argument('--device', default='cuda:0', help='device')
     # 训练数据集的根目录(VOCdevkit)
-    parser.add_argument('--data-path', default='../dataset', help='dataset')
+    parser.add_argument('--data-path', default='../input', help='dataset')
     # 检测目标类别数(不包含背景)
     parser.add_argument('--num-classes', default=20, type=int, help='num_classes')
     # 文件保存地址
-    parser.add_argument('--output-dir', default='../pth/output', help='path where to save')
+    parser.add_argument('--output-dir', default='./pth/output', help='path where to save')
     # 若需要接着上次训练，则指定上次训练保存权重文件地址
     parser.add_argument('--resume', default='', type=str, help='resume from checkpoint')
     # 指定接着从哪个epoch数开始训练
