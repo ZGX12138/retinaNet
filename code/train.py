@@ -23,6 +23,7 @@ def create_model(num_classes):
                                      extra_blocks=LastLevelP6P7(256, 256),
                                      trainable_layers=3)
     model = RetinaNet(backbone, num_classes)
+    # print(model)
 
     # 载入预训练权重
     # https://download.pytorch.org/models/retinanet_resnet50_fpn_coco-eeacb38b.pth
