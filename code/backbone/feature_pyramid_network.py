@@ -129,6 +129,7 @@ class ExtraFPNBlock(nn.Module):
         names (List[str]): the extended set of names for the results
     """
     def forward(self,
+                P5: Tensor,
                 results: List[Tensor],
                 x: List[Tensor],
                 names: List[str]) -> Tuple[List[Tensor], List[str]]:
@@ -160,10 +161,12 @@ class LastLevelP6P7(ExtraFPNBlock):
         self.use_P5 = in_channels == out_channels
 
     def forward(self,
+                p5:Tensor,
                 p: List[Tensor],
                 c: List[Tensor],
                 names: List[str]) -> Tuple[List[Tensor], List[str]]:
-        p5, c5 = p[-1], c[-1]
+        # p5, c5 = p[-1], c[-1]
+        c5=c[-1]
         x = p5 if self.use_P5 else c5
         p6 = self.p6(x)
         p7 = self.p7(F.relu(p6))
@@ -305,7 +308,7 @@ class FeaturePyramidNetwork(nn.Module):
 
         # 在layer4对应的预测特征层基础上生成预测特征矩阵5
         if self.extra_blocks is not None:
-            results, names = self.extra_blocks(results, x, names)
+            results, names = self.extra_blocks(P5,results, x, names)
 
         # make it back an OrderedDict
         out = OrderedDict([(k, v) for k, v in zip(names, results)])
