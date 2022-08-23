@@ -129,6 +129,7 @@ class ExtraFPNBlock(nn.Module):
         names (List[str]): the extended set of names for the results
     """
     def forward(self,
+                P3: Tensor,
                 P5: Tensor,
                 results: List[Tensor],
                 x: List[Tensor],
@@ -153,23 +154,26 @@ class LastLevelP6P7(ExtraFPNBlock):
     """
     def __init__(self, in_channels: int, out_channels: int):
         super().__init__()
-        self.p6 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
-        self.p7 = nn.Conv2d(out_channels, out_channels, 3, 2, 1)
-        for module in [self.p6, self.p7]:
+        # self.p6 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        # self.p7 = nn.Conv2d(out_channels, out_channels, 3, 2, 1)
+
+        self.use_P5 = in_channels == out_channels
+        self.P3to1 = nn.Conv2d(in_channels,out_channels,3,2,1)
+        self.P3to2 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        self.P3to3 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        self.P3to4 = nn.Conv2d(in_channels, out_channels, 3, 2, 1)
+        for module in [self.P3to1, self.P3to2,self.P3to3,self.P3to4]:
             nn.init.kaiming_uniform_(module.weight, a=1)
             nn.init.constant_(module.bias, 0)
-        self.use_P5 = in_channels == out_channels
-
     def forward(self,
-                p5:Tensor,
+                P3:Tensor,
+                P5:Tensor,
                 p: List[Tensor],
                 c: List[Tensor],
                 names: List[str]) -> Tuple[List[Tensor], List[str]]:
-        # p5, c5 = p[-1], c[-1]
-        c5=c[-1]
-        x = p5 if self.use_P5 else c5
-        p6 = self.p6(x)
-        p7 = self.p7(F.relu(p6))
+        x = P3
+        p6 = self.P3to3(F.relu(self.P3to2(F.relu(self.P3to1(x)))))
+        p7 = self.P3to4(F.relu(p6))
         p.extend([p6, p7])
         names.extend(["p6", "p7"])
         return p, names
@@ -308,7 +312,7 @@ class FeaturePyramidNetwork(nn.Module):
 
         # 在layer4对应的预测特征层基础上生成预测特征矩阵5
         if self.extra_blocks is not None:
-            results, names = self.extra_blocks(P5,results, x, names)
+            results, names = self.extra_blocks(P3,P5,results, x, names)
 
         # make it back an OrderedDict
         out = OrderedDict([(k, v) for k, v in zip(names, results)])
